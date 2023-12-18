@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useEffect, useState } from "react";
+import {FC, useCallback, useEffect, useMemo, useState} from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,50 +31,55 @@ const CustomTable = ({
     const [openAddModal, setOpenAddModal] = useState(false);
     const [addModalState, setAddModalState] = useState({});
 
-    const getHeaders = () => {
+    const getHeaders = useCallback(() => {
         return columns.filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
-    };
+    }, [columns, visible]);
 
-    const totalPages = Math.ceil(data.length / perPage);
+    const totalPages = useMemo(() => Math.ceil(data.length / perPage), [data, perPage]);
 
-    const applyFilters = (item) => {
-        const globalSearch = () =>
-            Object.values(item).some((value) => {
-                    // @ts-ignore
-                    return value.toString().toLowerCase().includes(filters.global.toLowerCase());
-                }
+    const applyFilters = useCallback(
+        (item) => {
+            const globalSearch = () =>
+                Object.values(item).some((value) =>
+                    value.toString().toLowerCase().includes(filters.global.toLowerCase())
+                );
+
+            const columnSearch = useCallback(
+                (columnName, filterValue) => {
+                    const column = columns.find((col) => col.dt_name === columnName);
+                    if (column) {
+                        const filterType = column.filter;
+
+                        if (filterType === "include") {
+                            return item[columnName].includes(filterValue);
+                        } else if (filterType === "equal") {
+                            return item[columnName] === filterValue;
+                        }
+                    }
+                    return true;
+                }, [columns]
             );
 
-        const columnSearch = (columnName, filterValue) => {
-            const column = columns.find((col) => col.dt_name === columnName);
-            if (column) {
-                const filterType = column.filter;
+            return globalSearch() && filters.columns.every((colFilter) =>
+                columnSearch(Object.keys(colFilter)[0], colFilter[Object.keys(colFilter)[0]])
+            );
+        },
+        [filters, columns]
+    );
 
-                if (filterType === "include") {
-                    return item[columnName].includes(filterValue);
-                } else if (filterType === "equal") {
-                    return item[columnName] === filterValue;
-                }
-            }
-            return true;
-        };
-
-        return globalSearch() && filters.columns.every((colFilter) =>
-            columnSearch(Object.keys(colFilter)[0], colFilter[Object.keys(colFilter)[0]])
-        );
-    };
-
-    const getRows = () => {
+    const getRows = useCallback(() => {
         let filteredData = data;
 
         if (pagination) {
-            filteredData = filteredData.filter((item) => applyFilters(item)).slice(page.pageIndex * page.pageSize, (page.pageIndex + 1) * page.pageSize);
+            filteredData = filteredData
+                .filter((item) => applyFilters(item))
+                .slice(page.pageIndex * page.pageSize, (page.pageIndex + 1) * page.pageSize);
         } else {
             filteredData.filter((item) => applyFilters(item));
         }
 
         return filteredData;
-    };
+    }, [data, pagination, applyFilters, page]);
 
     const handlePrevious = () => {
         setPage((prev) => ({
