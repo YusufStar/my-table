@@ -115,7 +115,6 @@ export const TableFunctions = ({
     };
 };
 
-
 export const TestColumns = [
     {
         header: "id",

@@ -1,6 +1,6 @@
 import CustomTable from "@/components/CustomTable";
 import {data} from "@/lib/data";
-import {TestColumns} from "@/lib/table";
+import {TestColumns, yourData} from "@/lib/table";
 
 export default function Home() {
     return (
