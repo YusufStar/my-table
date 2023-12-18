@@ -8,6 +8,7 @@ export default function Home() {
             <div className="container">
                 <CustomTable
                     columns={TestColumns}
+                    langs={["Tr", "En"]}
                     initial_dt={data}
                     perPage={10}
                     pagination={true}

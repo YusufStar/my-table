@@ -126,14 +126,16 @@ export const TestColumns = [
         dt_name: "email",
         filter: "include",
         enableForm: true,
-        type: "email"
+        type: "email",
+        translate: true
     },
     {
         header: "First Name",
         dt_name: "first_name",
         filter: "include",
         enableForm: true,
-        type: "text"
+        type: "text",
+        translate: true
     },
     {
         header: "Last Name",
@@ -141,7 +143,8 @@ export const TestColumns = [
         filter: "include",
         enableForm: true,
         sortable: true,
-        type: "text"
+        type: "text",
+        translate: true
     },
     {
         header: "Gender",
@@ -149,7 +152,8 @@ export const TestColumns = [
         filter: "equal",
         columnFilter: true,
         enableForm: true,
-        type: "text"
+        type: "text",
+        translate: true
     },
     {
         header: "Password",

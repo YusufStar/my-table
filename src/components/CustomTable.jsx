@@ -24,7 +24,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogClose
+    DialogClose, DialogOverlay
 } from "@/components/ui/dialog";
 import ThemeToggle from "@/components/ThemeToggle";
 import {Label} from "@/components/ui/label";
@@ -33,10 +33,10 @@ import {TableFunctions} from "@/lib/table";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
-    DropdownMenuContent,
+    DropdownMenuContent, DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import {ArrowDownIcon, ArrowDownUp, ArrowUpIcon} from "lucide-react";
+import {ArrowDownIcon, ArrowDownUp, ArrowUpIcon, Moon, Sun} from "lucide-react";
 
 const CustomTable = ({
                          columns,
@@ -44,6 +44,7 @@ const CustomTable = ({
                          perPage = 10,
                          pagination = true,
                          paginationType = "page",
+                         langs
                      }) => {
     const [data, setData] = useState(initial_dt);
     const [page, setPage] = useState({
@@ -58,6 +59,7 @@ const CustomTable = ({
     const [openAddModal, setOpenAddModal] = useState(false);
     const [addModalState, setAddModalState] = useState({});
     const [sorting, setSorting] = useState({})
+    const [lang, setLang] = useState("")
 
     const table = TableFunctions({
         columns,
@@ -111,7 +113,7 @@ const CustomTable = ({
                         </Button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className="">
+                    <DropdownMenuContent align="end" className={"lg:max-w-screen-lg overflow-y-scroll !max-h-32"}>
                         {columns.filter(col => !col.hide).map(column => {
                             return (
                                 <DropdownMenuCheckboxItem onCheckedChange={(value) => {
@@ -125,6 +127,18 @@ const CustomTable = ({
                                 </DropdownMenuCheckboxItem>
                             )
                         })}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="!ring-0" asChild>
+                        <Button variant="outline">
+                            {lang === "" ? "Default" : lang}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setLang("")}>Default</DropdownMenuItem>
+                        {langs.map(lang => <DropdownMenuItem onClick={() => setLang(lang)}>{lang}</DropdownMenuItem>)}
                     </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -163,7 +177,8 @@ const CustomTable = ({
                     <DialogTrigger asChild>
                         <Button variant="outline">Add Data</Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
+
+                    <DialogContent className={"lg:max-w-2xl overflow-y-auto h-fit"}>
                         <form className="outline-none rounded-md" onSubmit={(e) => {
                             e.preventDefault();
                             const st = addModalState;
@@ -175,37 +190,53 @@ const CustomTable = ({
                             setAddModalState({});
                             setOpenAddModal(false);
                         }}>
-                            <DialogHeader>
-                                <DialogTitle>Add Data</DialogTitle>
-                                <DialogDescription>
-                                    Click add when you're done.
-                                </DialogDescription>
-                            </DialogHeader>
+                            <div className="w-full flex items-start pr-8">
+                                <DialogHeader>
+                                    <DialogTitle>Add Data</DialogTitle>
+                                    <DialogDescription>
+                                        Click add when you're done.
+                                    </DialogDescription>
+                                </DialogHeader>
 
-                            <div className="grid gap-4 py-4">
-                                {columns
-                                    // @ts-ignore
-                                    .filter(x => x?.enableForm)
-                                    .map((column) => (
-                                        <div className="grid grid-cols-4 items-center gap-4" key={column.id}>
-                                            <Label htmlFor="name" className="text-right w-fit capitalize">
-                                                {// @ts-ignore
-                                                    column?.dt_name?.replaceAll("_", " ")}
-                                            </Label>
-                                            <Input
-                                                onChange={(event) => setAddModalState(prevState => ({
-                                                    ...prevState,
-                                                    [column?.dt_name]: event.target.value
-                                                }))}
-                                                type={column?.type}
-                                                required
-                                                id={column?.dt_name}
-                                                placeholder={column?.dt_name?.replaceAll("_", " ")}
-                                                className="col-span-3"
-                                            />
-                                        </div>
-                                    ))}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="!ring-0 ml-auto" asChild>
+                                        <Button variant="outline">
+                                            {lang === "" ? "Default" : lang}
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => setLang("")}>Default</DropdownMenuItem>
+                                        {langs.map(lang => <DropdownMenuItem onClick={() => setLang(lang)}>{lang}</DropdownMenuItem>)}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
+
+                            <div className="flex flex-col gap-5 py-6">
+                                {columns
+                                    .filter(x => x?.enableForm && (lang === "" || x?.translate))
+                                    .map((column) => {
+                                        const columnKey = lang === "" ? column?.dt_name : column?.dt_name + lang;
+                                        return (
+                                            <div className="grid gridcol-4 items-center gap-4" key={column.id + columnKey}>
+                                                <Label className="text-left w-full capitalize">
+                                                    {column?.dt_name?.replaceAll("_", " ")}
+                                                </Label>
+                                                <Input
+                                                    onChange={(event) => setAddModalState(prevState => ({
+                                                        ...prevState,
+                                                        [columnKey]: event.target.value
+                                                    }))}
+                                                    type={column?.type}
+                                                    value={addModalState[columnKey]}
+                                                    required
+                                                    id={columnKey}
+                                                    placeholder={(lang && lang + " ") + column?.dt_name?.replaceAll("_", " ")}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+
                             <DialogFooter>
                                 <DialogClose className="mr-4">
                                     <Button variant="secondary" type="reset">
@@ -285,11 +316,11 @@ const CustomTable = ({
                                             className="w-fit border-b border-muted-foreground cursor-pointer flex items-center gap-2"
                                         >
                                             {column.header}
-                                        {column.header !== sorting?.id && <ArrowDownUp className="w-4 h-4" />}
-                                        {column.header === sorting?.id ?
-                                            sorting?.value === "asc" ? <ArrowDownIcon className="w-4 h-4" />
-                                                : <ArrowUpIcon className="w-4 h-4"/>
-                                        : null}
+                                            {column.header !== sorting?.id && <ArrowDownUp className="w-4 h-4"/>}
+                                            {column.header === sorting?.id ?
+                                                sorting?.value === "asc" ? <ArrowDownIcon className="w-4 h-4"/>
+                                                    : <ArrowUpIcon className="w-4 h-4"/>
+                                                : null}
                                         </div>
 
                                         : column.header
@@ -302,7 +333,7 @@ const CustomTable = ({
                         {table.getRows().map((dt, dt_idx) => (
                             <TableRow key={dt_idx}>
                                 {table.getHeaders().map((col, col_idx) => (
-                                    <TableCell key={col_idx}>{dt[col.dt_name]}</TableCell>
+                                    <TableCell key={col_idx}>{dt[col.dt_name+lang] ?? dt[col.dt_name]}</TableCell>
                                 ))}
                             </TableRow>
                         ))}
