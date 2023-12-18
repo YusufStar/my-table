@@ -1,18 +1,18 @@
-import {useCallback, useMemo} from "react";
+import { useCallback } from "react";
 
 export const TableFunctions = ({
-                          columns,
-                          visible,
-                          data,
-                          perPage,
-                          filters,
-                          pagination,
-                          setPage,
-                          page
-
-                      }) => {
+                                   columns,
+                                   visible,
+                                   data,
+                                   filters,
+                                   pagination,
+                                   page,
+                                   sorting,
+                               }) => {
     const getHeaders = useCallback(() => {
-        return columns.filter((col) => !col.hide).filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
+        return columns
+            .filter((col) => !col.hide)
+            .filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
     }, [columns, visible]);
 
     const applyFilters = useCallback(
@@ -23,21 +23,27 @@ export const TableFunctions = ({
                 );
 
             const columnSearch = (columnName, filterValue) => {
-                    const column = columns.find((col) => col.dt_name === columnName);
-                    if (column) {
-                        const filterType = column.filter;
+                const column = columns.find((col) => col.dt_name === columnName);
+                if (column) {
+                    const filterType = column.filter;
 
-                        if (filterType === "include") {
-                            return item[columnName].includes(filterValue);
-                        } else if (filterType === "equal") {
-                            return item[columnName] === filterValue;
-                        }
+                    if (filterType === "include") {
+                        return item[columnName].includes(filterValue);
+                    } else if (filterType === "equal") {
+                        return item[columnName] === filterValue;
                     }
-                    return true;
                 }
+                return true;
+            };
 
-            return globalSearch() && filters.columns.every((colFilter) =>
-                columnSearch(Object.keys(colFilter)[0], colFilter[Object.keys(colFilter)[0]])
+            return (
+                globalSearch() &&
+                filters.columns.every((colFilter) =>
+                    columnSearch(
+                        Object.keys(colFilter)[0],
+                        colFilter[Object.keys(colFilter)[0]]
+                    )
+                )
             );
         },
         [filters, columns]
@@ -46,16 +52,37 @@ export const TableFunctions = ({
     const getRows = useCallback(() => {
         let filteredData = data;
 
+        // Apply filters
+        filteredData = filteredData.filter((item) => applyFilters(item));
+
+        // Apply sorting
+        if (sorting.id && sorting.value) {
+            const column = columns.find((col) => col.header === sorting.id);
+            if (column) {
+                const comparator = (a, b) => {
+                    const aValue = a[column.dt_name];
+                    const bValue = b[column.dt_name];
+                    if (sorting.value === "asc") {
+                        return aValue > bValue ? 1 : -1;
+                    } else {
+                        return aValue < bValue ? 1 : -1;
+                    }
+                };
+
+                filteredData = filteredData.sort(comparator);
+            }
+        }
+
+        // Apply pagination
         if (pagination) {
-            filteredData = filteredData
-                .filter((item) => applyFilters(item))
-                .slice(page.pageIndex * page.pageSize, (page.pageIndex + 1) * page.pageSize);
-        } else {
-            filteredData.filter((item) => applyFilters(item));
+            filteredData = filteredData.slice(
+                page.pageIndex * page.pageSize,
+                (page.pageIndex + 1) * page.pageSize
+            );
         }
 
         return filteredData;
-    }, [data, pagination, applyFilters, page]);
+    }, [data, pagination, applyFilters, page, sorting, columns]);
 
     const getUniqueValues = (columnName, data) => {
         const uniqueValues = new Set();
@@ -85,13 +112,15 @@ export const TableFunctions = ({
         getHeaders,
         getRows,
         applyFilters,
-    }
-}
+    };
+};
 
-export const TestColumns =  [
+
+export const TestColumns = [
     {
         header: "id",
         dt_name: "id",
+        sortable: true
     },
     {
         header: "Email",
@@ -112,6 +141,7 @@ export const TestColumns =  [
         dt_name: "last_name",
         filter: "include",
         enableForm: true,
+        sortable: true,
         type: "text"
     },
     {

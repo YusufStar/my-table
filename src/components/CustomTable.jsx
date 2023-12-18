@@ -1,15 +1,34 @@
 'use client';
 
 import {useMemo, useState} from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose
+} from "@/components/ui/dialog";
 import ThemeToggle from "@/components/ThemeToggle";
-import { Label } from "@/components/ui/label";
-import { toast } from "react-toastify";
+import {Label} from "@/components/ui/label";
+import {toast} from "react-toastify";
 import {TableFunctions} from "@/lib/table";
 import {
     DropdownMenu,
@@ -17,7 +36,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import {ArrowDownIcon} from "lucide-react";
+import {ArrowDownIcon, ArrowDownUp, ArrowUpIcon} from "lucide-react";
 
 const CustomTable = ({
                          columns,
@@ -38,16 +57,16 @@ const CustomTable = ({
     const [visible, setVisible] = useState({});
     const [openAddModal, setOpenAddModal] = useState(false);
     const [addModalState, setAddModalState] = useState({});
+    const [sorting, setSorting] = useState({})
 
     const table = TableFunctions({
         columns,
         visible,
         data,
-        perPage,
         filters,
         pagination,
-        setPage,
-        page
+        page,
+        sorting
     })
 
     const totalPages = () => Math.ceil(data.length / perPage);
@@ -79,36 +98,37 @@ const CustomTable = ({
             <div className="flex items-center w-full gap-4">
                 <Input
                     value={filters.global}
-                    onChange={(e) => setFilters(prevState => ({ ...prevState, global: e.target.value }))}
+                    onChange={(e) => setFilters(prevState => ({...prevState, global: e.target.value}))}
                     placeholder="Search in data table."
                     className="max-w-sm !outline-none !ring-muted-foreground"
                 />
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="">
-                            <Button variant="outline" className="">
-                                Columns
-                                <ArrowDownIcon className="w-3.5 h-3.5 ml-2"/>
-                            </Button>
-                        </DropdownMenuTrigger>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="">
+                        <Button variant="outline" className="">
+                            Columns
+                            <ArrowDownIcon className="w-3.5 h-3.5 ml-2"/>
+                        </Button>
+                    </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align="end" className="">
-                            {columns.filter(col => !col.hide).map(column => {
-                                return (
-                                    <DropdownMenuCheckboxItem onCheckedChange={(value) => {
-                                        setVisible((prev) => ({
-                                            ...prev,
+                    <DropdownMenuContent align="end" className="">
+                        {columns.filter(col => !col.hide).map(column => {
+                            return (
+                                <DropdownMenuCheckboxItem onCheckedChange={(value) => {
+                                    setVisible((prev) => ({
+                                        ...prev,
                                         [column.dt_name]: value
-                                        }))
-                                    }} checked={visible[column.dt_name] ?? true} key={column.dt_name} className="capitalize">
-                                        {column.header}
-                                    </DropdownMenuCheckboxItem>
-                                )
-                            })}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                    }))
+                                }} checked={visible[column.dt_name] ?? true} key={column.dt_name}
+                                                          className="capitalize">
+                                    {column.header}
+                                </DropdownMenuCheckboxItem>
+                            )
+                        })}
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
-                <ThemeToggle />
+                <ThemeToggle/>
 
                 <AlertDialog>
                     <AlertDialogTrigger disabled={data.length === 0}
@@ -131,7 +151,7 @@ const CustomTable = ({
                                     const filteredData = data.filter((item) => !table.applyFilters(item));
 
                                     setData(filteredData);
-                                    setFilters({ global: "", columns: [] });
+                                    setFilters({global: "", columns: []});
 
                                     toast.warning("Deleted All Data");
                                 }}>Continue</AlertDialogAction>
@@ -173,7 +193,10 @@ const CustomTable = ({
                                                     column?.dt_name?.replaceAll("_", " ")}
                                             </Label>
                                             <Input
-                                                onChange={(event) => setAddModalState(prevState => ({ ...prevState, [column?.dt_name]: event.target.value }))}
+                                                onChange={(event) => setAddModalState(prevState => ({
+                                                    ...prevState,
+                                                    [column?.dt_name]: event.target.value
+                                                }))}
                                                 type={column?.type}
                                                 required
                                                 id={column?.dt_name}
@@ -196,7 +219,8 @@ const CustomTable = ({
                 </Dialog>
 
                 {filters.columns.length > 0 ?
-                    <Button onClick={() => setFilters(prevState => ({ ...prevState, columns: [] }))} variant="destructive">Clear Filters</Button> : null}
+                    <Button onClick={() => setFilters(prevState => ({...prevState, columns: []}))}
+                            variant="destructive">Clear Filters</Button> : null}
             </div>
 
             <div className="rounded border">
@@ -219,7 +243,7 @@ const CustomTable = ({
 
                                                 const newColumns =
                                                     newVal !== "all"
-                                                        ? [...withoutAllFilter, { [column.dt_name]: newVal }]
+                                                        ? [...withoutAllFilter, {[column.dt_name]: newVal}]
                                                         : withoutAllFilter;
 
                                                 return {
@@ -229,7 +253,7 @@ const CustomTable = ({
                                             });
                                         }}>
                                         <SelectTrigger className="px-2 w-32 !ring-transparent">
-                                            <SelectValue placeholder="All" />
+                                            <SelectValue placeholder="All"/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
@@ -240,7 +264,36 @@ const CustomTable = ({
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
-                                    : column.header}
+                                    : column.sortable ? <div
+                                            onClick={() => {
+                                                if (column?.header !== sorting?.id) {
+                                                    setSorting({
+                                                        id: column.header,
+                                                        value: "asc",
+                                                    });
+                                                } else if (column?.header === sorting?.id) {
+                                                    if (sorting?.value === "desc") {
+                                                        setSorting({});
+                                                    } else {
+                                                        setSorting((prevState) => ({
+                                                            ...prevState,
+                                                            value: prevState?.value === "asc" ? "desc" : "asc",
+                                                        }));
+                                                    }
+                                                }
+                                            }}
+                                            className="w-fit border-b border-muted-foreground cursor-pointer flex items-center gap-2"
+                                        >
+                                            {column.header}
+                                        {column.header !== sorting?.id && <ArrowDownUp className="w-4 h-4" />}
+                                        {column.header === sorting?.id ?
+                                            sorting?.value === "asc" ? <ArrowDownIcon className="w-4 h-4" />
+                                                : <ArrowUpIcon className="w-4 h-4"/>
+                                        : null}
+                                        </div>
+
+                                        : column.header
+                                }
                             </TableHead>
                         ))}
                     </TableHeader>
