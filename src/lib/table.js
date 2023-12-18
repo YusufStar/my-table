@@ -12,7 +12,7 @@ export const TableFunctions = ({
 
                       }) => {
     const getHeaders = useCallback(() => {
-        return columns.filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
+        return columns.filter((col) => !col.hide).filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
     }, [columns, visible]);
 
     const applyFilters = useCallback(
@@ -77,7 +77,7 @@ export const TableFunctions = ({
             uniqueValuesByColumn[columnName] = getUniqueValues(columnName, data);
         });
 
-        return uniqueValuesByColumn[columnName] || [];
+        return uniqueValuesByColumn[columnName] || uniqueValuesByColumn;
     };
 
     return {
@@ -121,5 +121,10 @@ export const TestColumns =  [
         columnFilter: true,
         enableForm: true,
         type: "text"
+    },
+    {
+        header: "Password",
+        dt_name: "password",
+        hide: true
     }
 ]

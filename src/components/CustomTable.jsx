@@ -11,6 +11,13 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
 import {TableFunctions} from "@/lib/table";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import {ArrowDownIcon} from "lucide-react";
 
 const CustomTable = ({
                          columns,
@@ -76,6 +83,31 @@ const CustomTable = ({
                     placeholder="Search in data table."
                     className="max-w-sm !outline-none !ring-muted-foreground"
                 />
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="">
+                            <Button variant="outline" className="">
+                                Columns
+                                <ArrowDownIcon className="w-3.5 h-3.5 ml-2"/>
+                            </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent align="end" className="">
+                            {columns.filter(col => !col.hide).map(column => {
+                                return (
+                                    <DropdownMenuCheckboxItem onCheckedChange={(value) => {
+                                        setVisible((prev) => ({
+                                            ...prev,
+                                        [column.dt_name]: value
+                                        }))
+                                    }} checked={visible[column.dt_name] ?? true} key={column.dt_name} className="capitalize">
+                                        {column.header}
+                                    </DropdownMenuCheckboxItem>
+                                )
+                            })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
                 <ThemeToggle />
 
                 <AlertDialog>
