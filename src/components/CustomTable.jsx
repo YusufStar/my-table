@@ -1,6 +1,6 @@
 'use client';
 
-import {FC, useCallback, useEffect, useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import ThemeToggle from "@/components/ThemeToggle";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-toastify";
+import {TableFunctions} from "@/lib/table";
 
 const CustomTable = ({
                          columns,
@@ -31,91 +32,39 @@ const CustomTable = ({
     const [openAddModal, setOpenAddModal] = useState(false);
     const [addModalState, setAddModalState] = useState({});
 
-    const getHeaders = useCallback(() => {
-        return columns.filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
-    }, [columns, visible]);
+    const table = TableFunctions({
+        columns,
+        visible,
+        data,
+        perPage,
+        filters,
+        pagination,
+        setPage,
+        page
+    })
 
-    const totalPages = useMemo(() => Math.ceil(data.length / perPage), [data, perPage]);
-
-    const applyFilters = useCallback(
-        (item) => {
-            const globalSearch = () =>
-                Object.values(item).some((value) =>
-                    value.toString().toLowerCase().includes(filters.global.toLowerCase())
-                );
-
-            const columnSearch = useCallback(
-                (columnName, filterValue) => {
-                    const column = columns.find((col) => col.dt_name === columnName);
-                    if (column) {
-                        const filterType = column.filter;
-
-                        if (filterType === "include") {
-                            return item[columnName].includes(filterValue);
-                        } else if (filterType === "equal") {
-                            return item[columnName] === filterValue;
-                        }
-                    }
-                    return true;
-                }, [columns]
-            );
-
-            return globalSearch() && filters.columns.every((colFilter) =>
-                columnSearch(Object.keys(colFilter)[0], colFilter[Object.keys(colFilter)[0]])
-            );
-        },
-        [filters, columns]
-    );
-
-    const getRows = useCallback(() => {
-        let filteredData = data;
-
-        if (pagination) {
-            filteredData = filteredData
-                .filter((item) => applyFilters(item))
-                .slice(page.pageIndex * page.pageSize, (page.pageIndex + 1) * page.pageSize);
-        } else {
-            filteredData.filter((item) => applyFilters(item));
-        }
-
-        return filteredData;
-    }, [data, pagination, applyFilters, page]);
+    const totalPages = () => Math.ceil(data.length / perPage);
 
     const handlePrevious = () => {
         setPage((prev) => ({
             ...prev,
-            pageIndex: Math.max(prev.pageIndex - 1, 0),
+            pageIndex: prev.pageIndex - 1,
         }));
     };
 
     const handleNext = () => {
         setPage((prev) => ({
-            ...prev,
-            pageIndex: Math.min(prev.pageIndex + 1, totalPages - 1),
+            pageSize: perPage,
+            pageIndex: prev.pageIndex + 1,
         }));
     };
 
-    const getUniqueValues = (columnName, data) => {
-        const uniqueValues = new Set();
-
-        data.forEach((item) => {
-            if (item[columnName] !== undefined) {
-                uniqueValues.add(item[columnName].toString());
-            }
-        });
-
-        return Array.from(uniqueValues);
+    const canNextPage = () => {
+        return page.pageIndex === totalPages() - 1;
     };
 
-    const uniqueValues = (columnName) => {
-        const uniqueValuesByColumn = {};
-
-        getHeaders().forEach((col) => {
-            const columnName = col.dt_name;
-            uniqueValuesByColumn[columnName] = getUniqueValues(columnName, data);
-        });
-
-        return uniqueValuesByColumn[columnName] || [];
+    const canPreviousPage = () => {
+        return page.pageIndex === 0;
     };
 
     return (
@@ -147,7 +96,7 @@ const CustomTable = ({
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={() => {
-                                    const filteredData = data.filter((item) => !applyFilters(item));
+                                    const filteredData = data.filter((item) => !table.applyFilters(item));
 
                                     setData(filteredData);
                                     setFilters({ global: "", columns: [] });
@@ -221,7 +170,7 @@ const CustomTable = ({
             <div className="rounded border">
                 <Table>
                     <TableHeader>
-                        {getHeaders().map((column, idx) => (
+                        {table.getHeaders().map((column, idx) => (
                             <TableHead key={idx}>
                                 {column.columnFilter
                                     ? <Select
@@ -253,7 +202,7 @@ const CustomTable = ({
                                         <SelectContent>
                                             <SelectGroup>
                                                 <SelectItem defaultChecked={true} value="all">All</SelectItem>
-                                                {uniqueValues(column.dt_name).map((val) => (
+                                                {table.uniqueValues(column.dt_name).map((val) => (
                                                     <SelectItem value={val}>{val}</SelectItem>
                                                 ))}
                                             </SelectGroup>
@@ -265,9 +214,9 @@ const CustomTable = ({
                     </TableHeader>
 
                     <TableBody>
-                        {getRows().map((dt, dt_idx) => (
+                        {table.getRows().map((dt, dt_idx) => (
                             <TableRow key={dt_idx}>
-                                {getHeaders().map((col, col_idx) => (
+                                {table.getHeaders().map((col, col_idx) => (
                                     <TableCell key={col_idx}>{dt[col.dt_name]}</TableCell>
                                 ))}
                             </TableRow>
@@ -293,14 +242,15 @@ const CustomTable = ({
             {paginationType === "page" && (
                 <div className="mr-auto flex gap-3 items-center">
                     <Button
-                        disabled={page.pageIndex === 0}
+                        disabled={canPreviousPage()}
                         onClick={handlePrevious}
                         variant="outline"
                     >
                         Previous
                     </Button>
+
                     <Button
-                        disabled={page.pageIndex === totalPages - 1}
+                        disabled={canNextPage()}
                         onClick={handleNext}
                         variant="outline"
                     >
