@@ -125,6 +125,8 @@ export const TestColumns =  [
     {
         header: "Password",
         dt_name: "password",
+        enableForm: true,
+        type: "password",
         hide: true
     }
 ]
