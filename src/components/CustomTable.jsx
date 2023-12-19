@@ -129,8 +129,8 @@ const CustomTable = ({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
-                        {langs.map((lang) => (
-                            <DropdownMenuItem onClick={() => setLang(lang)}>{lang.code}</DropdownMenuItem>
+                        {langs.map((lang, idx) => (
+                            <DropdownMenuItem key={idx} onClick={() => setLang(lang)}>{lang.code}</DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -232,8 +232,8 @@ const CustomTable = ({
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        {langs.map((lang) => (
-                                            <DropdownMenuItem onClick={() => setAddModalLang(lang)}>{lang.code}</DropdownMenuItem>
+                                        {langs.map((lang, idx) => (
+                                            <DropdownMenuItem key={idx} onClick={() => setAddModalLang(lang)}>{lang.code}</DropdownMenuItem>
                                         ))}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -356,8 +356,8 @@ const CustomTable = ({
                                             <SelectItem  defaultChecked={true} value="all">
                                                 All
                                             </SelectItem>
-                                            {table.uniqueValues(column.dt_name).map((val) => (
-                                                <SelectItem value={val}>{val}</SelectItem>
+                                            {table.uniqueValues(column.dt_name).map((val, idx) => (
+                                                <SelectItem key={idx} value={val}>{val}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
