@@ -44,6 +44,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {ArrowDownIcon, ArrowDownUp, ArrowUpIcon} from "lucide-react";
+import {Checkbox} from "@/components/ui/checkbox";
 
 const CustomTable = ({
                          columns,
@@ -68,6 +69,7 @@ const CustomTable = ({
     const [sorting, setSorting] = useState({});
     const [lang, setLang] = useState(langs[0]);
     const [addModalLang, setAddModalLang] = useState(langs[0]);
+    const [selection, setSelection] = useState({})
 
     const table = TableFunctions({
         columns,
@@ -87,13 +89,13 @@ const CustomTable = ({
     const canPreviousPage = () => page.pageIndex === 0;
 
     return (
-        <div className="w-full h-full flex flex-col gap-4">
-            <div className="flex items-center w-full gap-4">
+        <div className=" h-full flex flex-col gap-4">
+            <div className="flex flex-wrap items-center w-full gap-4">
                 <Input
                     value={filters.global}
                     onChange={(e) => setFilters((prev) => ({...prev, global: e.target.value}))}
                     placeholder="Search in data table."
-                    className="max-w-sm !outline-none !ring-muted-foreground"
+                    className="w-screen max-w-sm !outline-none !ring-muted-foreground"
                 />
 
                 <DropdownMenu>
@@ -138,7 +140,39 @@ const CustomTable = ({
                 <AlertDialog>
                     <AlertDialogTrigger
                         disabled={data.length === 0}
-                        className="ml-auto disabled:pointer-events-none disabled:opacity-50"
+                        className="ml-0 2xl:ml-auto disabled:pointer-events-none disabled:opacity-50"
+                    >
+                        <Button variant="outline">Delete Selected Row's</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>Delete selected rows</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    const filteredData = data.filter((item) => !selection[item.id] ?? true);
+
+                                    setData(filteredData);
+                                    setFilters({global: "", columns: []});
+
+                                    toast.warning("Deleted Selected Data");
+                                }}
+                            >
+                                Continue
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog>
+                    <AlertDialogTrigger
+                        disabled={data.length === 0}
+                        className="disabled:pointer-events-none disabled:opacity-50"
                     >
                         <Button variant="outline">Delete All</Button>
                     </AlertDialogTrigger>
@@ -261,9 +295,33 @@ const CustomTable = ({
                 ) : null}
             </div>
 
-            <div className="rounded border">
+            <div className="rounded border ">
                 <Table>
                     <TableHeader>
+                        <TableHead>
+                            <Checkbox
+                                checked={table.getRows().length > 0 && table.getRows().every(row => selection[row.id])}
+                                onCheckedChange={(val) => {
+                                    const filteredRows = table.getRows();
+                                    const isSelectedAll = filteredRows.length > 0 && filteredRows.every(row => selection[row.id]);
+                                    const newSelection = {};
+
+                                    if (isSelectedAll) {
+                                        // If already selected, unselect all filtered rows
+                                        filteredRows.forEach((row) => {
+                                            newSelection[row.id] = false;
+                                        });
+                                    } else {
+                                        // If not already selected, select all filtered rows
+                                        filteredRows.forEach((row) => {
+                                            newSelection[row.id] = true;
+                                        });
+                                    }
+
+                                    setSelection(newSelection);
+                                }}
+                            />
+                        </TableHead>
                         {table.getHeaders().map((column, idx) => (
                             <TableHead key={idx} className="!w-fit">
                                 {column.columnFilter ? (
@@ -291,7 +349,7 @@ const CustomTable = ({
                                             });
                                         }}
                                     >
-                                        <SelectTrigger className="px-2 w-2/4 !ring-transparent">
+                                        <SelectTrigger className="px-2 w-[125px] !ring-transparent">
                                             <SelectValue placeholder="All"/>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -340,6 +398,12 @@ const CustomTable = ({
                     <TableBody>
                         {table.getRows().map((dt, dt_idx) => (
                             <TableRow key={dt_idx}>
+                                <TableCell>
+                                    <Checkbox
+                                        checked={selection[dt.id] ?? false}
+                                        onCheckedChange={() => setSelection(prev => ({...prev, [dt.id]: !prev[dt.id] ?? true}))}
+                                    />
+                                </TableCell>
                                 {table.getHeaders().map((col, col_idx) => (
                                     <TableCell key={col_idx}>{dt[col.dt_name + lang.code] ?? dt[col.dt_name]}</TableCell>
                                 ))}
