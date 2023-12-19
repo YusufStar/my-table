@@ -1,5 +1,5 @@
 import CustomTable from "@/components/CustomTable";
-import {data} from "@/lib/data";
+import {data, langs} from "@/lib/data";
 import {TestColumns, yourData} from "@/lib/table";
 
 export default function Home() {
@@ -8,8 +8,8 @@ export default function Home() {
             <div className="container">
                 <CustomTable
                     columns={TestColumns}
-                    langs={["Tr", "En"]}
-                    initial_dt={data}
+                    langs={langs}
+                    initial_dt={[]}
                     perPage={10}
                     pagination={true}
                     paginationType="page"

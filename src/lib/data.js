@@ -79,3 +79,27 @@ export const data = [{"id": 1, "first_name": "Daffy", "last_name": "Wills", "ema
     {"id": 79, "first_name": "Rivi", "last_name": "Linkie", "email": "rlinkie26@yandex.ru", "gender": "Genderfluid"},
     {"id": 80, "first_name": "Nettle", "last_name": "Thominga", "email": "nthominga27@house.gov", "gender": "Female"}
 ]
+
+export const langs = [
+    {
+        "name": "Turkey",
+        "code": "TR",
+        "emoji": "🇹🇷",
+        "unicode": "U+1F1F9 U+1F1F7",
+        "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/TR.svg"
+    },
+    {
+        "name": "Ukraine",
+        "code": "UA",
+        "emoji": "🇺🇦",
+        "unicode": "U+1F1FA U+1F1E6",
+        "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/UA.svg"
+    },
+    {
+        "name": "United States",
+        "code": "US",
+        "emoji": "🇺🇸",
+        "unicode": "U+1F1FA U+1F1F8",
+        "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/US.svg"
+    },
+]

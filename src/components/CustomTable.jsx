@@ -1,14 +1,22 @@
-'use client';
+'use client'
 
 import {useMemo, useState} from "react";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {toast} from "react-toastify";
+import {TableFunctions} from "@/lib/table";
 import {
     AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
+    AlertDialogAction, AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
@@ -24,19 +32,18 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogClose, DialogOverlay
+    DialogClose,
 } from "@/components/ui/dialog";
 import ThemeToggle from "@/components/ThemeToggle";
 import {Label} from "@/components/ui/label";
-import {toast} from "react-toastify";
-import {TableFunctions} from "@/lib/table";
 import {
     DropdownMenu,
+    DropdownMenuContent,
     DropdownMenuCheckboxItem,
-    DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import {ArrowDownIcon, ArrowDownUp, ArrowUpIcon, Moon, Sun} from "lucide-react";
+import {ArrowDownIcon, ArrowDownUp, ArrowUpIcon} from "lucide-react";
 
 const CustomTable = ({
                          columns,
@@ -44,7 +51,7 @@ const CustomTable = ({
                          perPage = 10,
                          pagination = true,
                          paginationType = "page",
-                         langs
+                         langs,
                      }) => {
     const [data, setData] = useState(initial_dt);
     const [page, setPage] = useState({
@@ -58,8 +65,9 @@ const CustomTable = ({
     const [visible, setVisible] = useState({});
     const [openAddModal, setOpenAddModal] = useState(false);
     const [addModalState, setAddModalState] = useState({});
-    const [sorting, setSorting] = useState({})
-    const [lang, setLang] = useState("")
+    const [sorting, setSorting] = useState({});
+    const [lang, setLang] = useState(langs[0]);
+    const [addModalLang, setAddModalLang] = useState(langs[0]);
 
     const table = TableFunctions({
         columns,
@@ -68,39 +76,22 @@ const CustomTable = ({
         filters,
         pagination,
         page,
-        sorting
-    })
+        sorting,
+    });
 
-    const totalPages = () => Math.ceil(data.length / perPage);
+    const totalPages = useMemo(() => Math.ceil(data.length / perPage), [data, perPage]);
 
-    const handlePrevious = () => {
-        setPage((prev) => ({
-            ...prev,
-            pageIndex: prev.pageIndex - 1,
-        }));
-    };
-
-    const handleNext = () => {
-        setPage((prev) => ({
-            pageSize: perPage,
-            pageIndex: prev.pageIndex + 1,
-        }));
-    };
-
-    const canNextPage = () => {
-        return page.pageIndex === totalPages() - 1;
-    };
-
-    const canPreviousPage = () => {
-        return page.pageIndex === 0;
-    };
+    const handlePrevious = () => setPage((prev) => ({...prev, pageIndex: prev.pageIndex - 1}));
+    const handleNext = () => setPage((prev) => ({pageSize: perPage, pageIndex: prev.pageIndex + 1}));
+    const canNextPage = () => page.pageIndex === totalPages - 1;
+    const canPreviousPage = () => page.pageIndex === 0;
 
     return (
         <div className="w-full h-full flex flex-col gap-4">
             <div className="flex items-center w-full gap-4">
                 <Input
                     value={filters.global}
-                    onChange={(e) => setFilters(prevState => ({...prevState, global: e.target.value}))}
+                    onChange={(e) => setFilters((prev) => ({...prev, global: e.target.value}))}
                     placeholder="Search in data table."
                     className="max-w-sm !outline-none !ring-muted-foreground"
                 />
@@ -113,53 +104,53 @@ const CustomTable = ({
                         </Button>
                     </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end" className={"lg:max-w-screen-lg overflow-y-scroll !max-h-32"}>
-                        {columns.filter(col => !col.hide).map(column => {
-                            return (
-                                <DropdownMenuCheckboxItem onCheckedChange={(value) => {
-                                    setVisible((prev) => ({
-                                        ...prev,
-                                        [column.dt_name]: value
-                                    }))
-                                }} checked={visible[column.dt_name] ?? true} key={column.dt_name}
-                                                          className="capitalize">
-                                    {column.header}
-                                </DropdownMenuCheckboxItem>
-                            )
-                        })}
+                    <DropdownMenuContent align="start">
+                        {columns.filter((col) => !col.hide).map((column) => (
+                            <DropdownMenuCheckboxItem
+                                onCheckedChange={(value) => {
+                                    setVisible((prev) => ({...prev, [column.dt_name]: value}));
+                                }}
+                                checked={visible[column.dt_name] ?? true}
+                                key={column.dt_name}
+                                className="capitalize"
+                            >
+                                {column.header}
+                            </DropdownMenuCheckboxItem>
+                        ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger className="!ring-0" asChild>
                         <Button variant="outline">
-                            {lang === "" ? "Default" : lang}
+                            <img alt={lang.name} className="w-8" src={lang?.image}/>
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setLang("")}>Default</DropdownMenuItem>
-                        {langs.map(lang => <DropdownMenuItem onClick={() => setLang(lang)}>{lang}</DropdownMenuItem>)}
+                    <DropdownMenuContent align="start">
+                        {langs.map((lang) => (
+                            <DropdownMenuItem onClick={() => setLang(lang)}>{lang.code}</DropdownMenuItem>
+                        ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
 
                 <ThemeToggle/>
 
                 <AlertDialog>
-                    <AlertDialogTrigger disabled={data.length === 0}
-                                        className="ml-auto disabled:pointer-events-none disabled:opacity-50">
-                        <Button variant="outline">
-                            Delete All
-                        </Button>
+                    <AlertDialogTrigger
+                        disabled={data.length === 0}
+                        className="ml-auto disabled:pointer-events-none disabled:opacity-50"
+                    >
+                        <Button variant="outline">Delete All</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Delete all rows
-                            </AlertDialogDescription>
+                            <AlertDialogDescription>Delete all rows</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>
+                                Cancel
+                            </AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={() => {
                                     const filteredData = data.filter((item) => !table.applyFilters(item));
@@ -168,7 +159,10 @@ const CustomTable = ({
                                     setFilters({global: "", columns: []});
 
                                     toast.warning("Deleted All Data");
-                                }}>Continue</AlertDialogAction>
+                                }}
+                            >
+                                Continue
+                            </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
@@ -179,58 +173,64 @@ const CustomTable = ({
                     </DialogTrigger>
 
                     <DialogContent className={"lg:max-w-2xl overflow-y-auto h-fit"}>
-                        <form className="outline-none rounded-md" onSubmit={(e) => {
-                            e.preventDefault();
-                            const st = addModalState;
-                            setData(prevState => [...prevState, {
-                                id: prevState.length + 1,
-                                ...st
-                            }]);
-                            toast.success("Successfully added new data");
-                            setAddModalState({});
-                            setOpenAddModal(false);
-                        }}>
+                        <form
+                            className="outline-none rounded-md"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                const st = addModalState;
+                                setData((prevState) => [...prevState, {id: prevState.length + 1, ...st}]);
+                                setAddModalLang(langs[0])
+                                toast.success("Successfully added new data");
+                                setAddModalState({});
+                                setOpenAddModal(false);
+                            }}
+                        >
                             <div className="w-full flex items-start pr-8">
                                 <DialogHeader>
                                     <DialogTitle>Add Data</DialogTitle>
-                                    <DialogDescription>
-                                        Click add when you're done.
-                                    </DialogDescription>
+                                    <DialogDescription>Click add when you're done.</DialogDescription>
                                 </DialogHeader>
 
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger className="!ring-0 ml-auto" asChild>
-                                        <Button variant="outline">
-                                            {lang === "" ? "Default" : lang}
+                                    <DropdownMenuTrigger className="!ring-0" asChild>
+                                        <Button variant="outline" className="ml-auto">
+                                            <img alt={addModalLang.name} className="w-8" src={addModalLang?.image}/>
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => setLang("")}>Default</DropdownMenuItem>
-                                        {langs.map(lang => <DropdownMenuItem onClick={() => setLang(lang)}>{lang}</DropdownMenuItem>)}
+                                        {langs.map((lang) => (
+                                            <DropdownMenuItem onClick={() => setAddModalLang(lang)}>{lang.code}</DropdownMenuItem>
+                                        ))}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
 
                             <div className="flex flex-col gap-5 py-6">
                                 {columns
-                                    .filter(x => x?.enableForm && (lang === "" || x?.translate))
+                                    .filter((x) => x?.enableForm && (addModalLang?.code === langs[0].code || x?.translate))
                                     .map((column) => {
-                                        const columnKey = lang === "" ? column?.dt_name : column?.dt_name + lang;
+                                        const columnKey = addModalLang?.code === langs[0].code ? column?.dt_name : column?.dt_name + addModalLang?.code;
+
                                         return (
-                                            <div className="grid gridcol-4 items-center gap-4" key={column.id + columnKey}>
+                                            <div
+                                                className="grid gridcol-4 items-center gap-4"
+                                                key={column.id + columnKey}
+                                            >
                                                 <Label className="text-left w-full capitalize">
                                                     {column?.dt_name?.replaceAll("_", " ")}
                                                 </Label>
                                                 <Input
-                                                    onChange={(event) => setAddModalState(prevState => ({
-                                                        ...prevState,
-                                                        [columnKey]: event.target.value
-                                                    }))}
+                                                    onChange={(event) =>
+                                                        setAddModalState((prevState) => ({
+                                                            ...prevState,
+                                                            [columnKey]: event.target.value,
+                                                        }))
+                                                    }
                                                     type={column?.type}
                                                     value={addModalState[columnKey]}
                                                     required
                                                     id={columnKey}
-                                                    placeholder={(lang && lang + " ") + column?.dt_name?.replaceAll("_", " ")}
+                                                    placeholder={(addModalLang?.code && addModalLang?.code + " ") + column?.dt_name?.replaceAll("_", " ")}
                                                 />
                                             </div>
                                         );
@@ -243,24 +243,31 @@ const CustomTable = ({
                                         Close
                                     </Button>
                                 </DialogClose>
-                                <Button type="submit" variant="destructive">Add Data</Button>
+                                <Button type="submit" variant="destructive">
+                                    Add Data
+                                </Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>
                 </Dialog>
 
-                {filters.columns.length > 0 ?
-                    <Button onClick={() => setFilters(prevState => ({...prevState, columns: []}))}
-                            variant="destructive">Clear Filters</Button> : null}
+                {filters.columns.length > 0 ? (
+                    <Button
+                        onClick={() => setFilters((prevState) => ({...prevState, columns: []}))}
+                        variant="destructive"
+                    >
+                        Clear Filters
+                    </Button>
+                ) : null}
             </div>
 
             <div className="rounded border">
                 <Table>
                     <TableHeader>
                         {table.getHeaders().map((column, idx) => (
-                            <TableHead key={idx}>
-                                {column.columnFilter
-                                    ? <Select
+                            <TableHead key={idx} className="!w-fit">
+                                {column.columnFilter ? (
+                                    <Select
                                         defaultValue="all"
                                         onValueChange={(newVal) => {
                                             setFilters((prevFilters) => {
@@ -282,49 +289,50 @@ const CustomTable = ({
                                                     columns: newColumns,
                                                 };
                                             });
-                                        }}>
-                                        <SelectTrigger className="px-2 w-32 !ring-transparent">
+                                        }}
+                                    >
+                                        <SelectTrigger className="px-2 w-2/4 !ring-transparent">
                                             <SelectValue placeholder="All"/>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem defaultChecked={true} value="all">All</SelectItem>
-                                                {table.uniqueValues(column.dt_name).map((val) => (
-                                                    <SelectItem value={val}>{val}</SelectItem>
-                                                ))}
-                                            </SelectGroup>
+                                            <SelectItem  defaultChecked={true} value="all">
+                                                All
+                                            </SelectItem>
+                                            {table.uniqueValues(column.dt_name).map((val) => (
+                                                <SelectItem value={val}>{val}</SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
-                                    : column.sortable ? <div
-                                            onClick={() => {
-                                                if (column?.header !== sorting?.id) {
-                                                    setSorting({
-                                                        id: column.header,
-                                                        value: "asc",
-                                                    });
-                                                } else if (column?.header === sorting?.id) {
-                                                    if (sorting?.value === "desc") {
-                                                        setSorting({});
-                                                    } else {
-                                                        setSorting((prevState) => ({
-                                                            ...prevState,
-                                                            value: prevState?.value === "asc" ? "desc" : "asc",
-                                                        }));
-                                                    }
-                                                }
-                                            }}
-                                            className="w-fit border-b border-muted-foreground cursor-pointer flex items-center gap-2"
-                                        >
-                                            {column.header}
-                                            {column.header !== sorting?.id && <ArrowDownUp className="w-4 h-4"/>}
-                                            {column.header === sorting?.id ?
-                                                sorting?.value === "asc" ? <ArrowDownIcon className="w-4 h-4"/>
-                                                    : <ArrowUpIcon className="w-4 h-4"/>
-                                                : null}
-                                        </div>
-
-                                        : column.header
-                                }
+                                ) : column.sortable ? (
+                                    <div
+                                        onClick={() => {
+                                            if (column?.header !== sorting?.id) {
+                                                setSorting({
+                                                    id: column.header,
+                                                    value: "asc",
+                                                });
+                                            } else if (column?.header === sorting?.id) {
+                                                setSorting((prevState) => ({
+                                                    ...prevState,
+                                                    value: prevState?.value === "asc" ? "desc" : "asc",
+                                                }));
+                                            }
+                                        }}
+                                        className="w-fit border-b border-muted-foreground cursor-pointer flex items-center gap-2"
+                                    >
+                                        {column.header}
+                                        {column.header !== sorting?.id && <ArrowDownUp className="w-4 h-4"/>}
+                                        {column.header === sorting?.id ? (
+                                            sorting?.value === "asc" ? (
+                                                <ArrowDownIcon className="w-4 h-4"/>
+                                            ) : (
+                                                <ArrowUpIcon className="w-4 h-4"/>
+                                            )
+                                        ) : null}
+                                    </div>
+                                ) : (
+                                    column.header
+                                )}
                             </TableHead>
                         ))}
                     </TableHeader>
@@ -333,7 +341,7 @@ const CustomTable = ({
                         {table.getRows().map((dt, dt_idx) => (
                             <TableRow key={dt_idx}>
                                 {table.getHeaders().map((col, col_idx) => (
-                                    <TableCell key={col_idx}>{dt[col.dt_name+lang] ?? dt[col.dt_name]}</TableCell>
+                                    <TableCell key={col_idx}>{dt[col.dt_name + lang.code] ?? dt[col.dt_name]}</TableCell>
                                 ))}
                             </TableRow>
                         ))}

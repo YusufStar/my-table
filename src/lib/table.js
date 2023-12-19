@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+// Tablo işlevlerini içeren bir özel kancayı oluşturdum
 export const TableFunctions = ({
                                    columns,
                                    visible,
@@ -9,12 +10,14 @@ export const TableFunctions = ({
                                    page,
                                    sorting,
                                }) => {
+    // Sütun başlıklarını almak için özel bir kancayı tanımladım
     const getHeaders = useCallback(() => {
         return columns
             .filter((col) => !col.hide)
             .filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
     }, [columns, visible]);
 
+    // Filtreleri uygulamak için özel bir kancayı tanımladım
     const applyFilters = useCallback(
         (item) => {
             const globalSearch = () =>
@@ -49,31 +52,28 @@ export const TableFunctions = ({
         [filters, columns]
     );
 
+    // Satırları almak için özel bir kancayı tanımladım
     const getRows = useCallback(() => {
         let filteredData = data;
 
-        // Apply filters
+        // Filtreleri uygula
         filteredData = filteredData.filter((item) => applyFilters(item));
 
-        // Apply sorting
+        // Sıralamayı uygula
         if (sorting.id && sorting.value) {
             const column = columns.find((col) => col.header === sorting.id);
             if (column) {
                 const comparator = (a, b) => {
                     const aValue = a[column.dt_name];
                     const bValue = b[column.dt_name];
-                    if (sorting.value === "asc") {
-                        return aValue > bValue ? 1 : -1;
-                    } else {
-                        return aValue < bValue ? 1 : -1;
-                    }
+                    return sorting.value === "asc" ? (aValue > bValue ? 1 : -1) : (aValue < bValue ? 1 : -1);
                 };
 
                 filteredData = filteredData.sort(comparator);
             }
         }
 
-        // Apply pagination
+        // Sayfalama uygula
         if (pagination) {
             filteredData = filteredData.slice(
                 page.pageIndex * page.pageSize,
@@ -84,6 +84,7 @@ export const TableFunctions = ({
         return filteredData;
     }, [data, pagination, applyFilters, page, sorting, columns]);
 
+    // Belirli bir sütun için benzersiz değerleri almak için özel bir fonksiyon tanımladım
     const getUniqueValues = (columnName, data) => {
         const uniqueValues = new Set();
 
@@ -96,6 +97,7 @@ export const TableFunctions = ({
         return Array.from(uniqueValues);
     };
 
+    // Tüm sütunlar için benzersiz değerleri almak için özel bir fonksiyon tanımladım
     const uniqueValues = (columnName) => {
         const uniqueValuesByColumn = {};
 
@@ -107,6 +109,7 @@ export const TableFunctions = ({
         return uniqueValuesByColumn[columnName] || uniqueValuesByColumn;
     };
 
+    // Dışa açılan fonksiyonları döndür
     return {
         uniqueValues,
         getHeaders,
@@ -115,51 +118,44 @@ export const TableFunctions = ({
     };
 };
 
+// Test için kullanılan sütunlar
 export const TestColumns = [
     {
-        header: "id",
+        header: "ID",
         dt_name: "id",
-        sortable: true
+        sortable: true,
     },
     {
-        header: "Email",
-        dt_name: "email",
-        filter: "include",
-        enableForm: true,
-        type: "email",
-        translate: true
-    },
-    {
-        header: "First Name",
-        dt_name: "first_name",
+        header: "Firma adı",
+        dt_name: "company_name",
         filter: "include",
         enableForm: true,
         type: "text",
-        translate: true
+        translate: false,
+        columnFilter: true,
     },
     {
-        header: "Last Name",
-        dt_name: "last_name",
+        header: "Ürün Adı",
+        dt_name: "product_name",
         filter: "include",
+        enableForm: true,
+        type: "text",
+        translate: true,
+    },
+    {
+        header: "Ölçü",
+        dt_name: "size",
         enableForm: true,
         sortable: true,
         type: "text",
-        translate: true
+        translate: true,
     },
     {
-        header: "Gender",
-        dt_name: "gender",
+        header: "Adet",
+        dt_name: "quantity",
         filter: "equal",
-        columnFilter: true,
         enableForm: true,
-        type: "text",
-        translate: true
+        type: "number",
+        translate: false,
     },
-    {
-        header: "Password",
-        dt_name: "password",
-        enableForm: true,
-        type: "password",
-        hide: true
-    }
-]
+];
