@@ -12,7 +12,7 @@ export default function Home() {
                     initial_dt={data}
                     perPage={10}
                     pagination={true}
-                    paginationType="load"
+                    paginationType="page"
                 />
             </div>
         </main>
