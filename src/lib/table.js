@@ -1,4 +1,6 @@
+'use client'
 import {useCallback} from "react";
+import {arrayBufferToString} from "next/dist/server/app-render/action-encryption-utils";
 
 // Tablo işlevlerini içeren bir özel kancayı oluşturdum
 export const TableFunctions = ({
@@ -36,9 +38,9 @@ export const TableFunctions = ({
                     const filterType = column.filter;
 
                     if (filterType === "include") {
-                        return item[columnName].includes(filterValue);
+                        return item[columnName].toLowerCase().includes(filterValue.toLowerCase());
                     } else if (filterType === "equal") {
-                        return item[columnName] === filterValue;
+                        return item[columnName].toLowerCase() === filterValue.toLowerCase();
                     }
                 }
                 return true;
@@ -93,9 +95,10 @@ export const TableFunctions = ({
     const getUniqueValues = (columnName, data) => {
         const uniqueValues = new Set();
 
-        data.forEach((item) => {
+        data
+            .forEach((item) => {
             if (item[columnName] !== undefined) {
-                uniqueValues.add(item[columnName].toString());
+                uniqueValues.add(item[columnName].toString().toLowerCase());
             }
         });
 
@@ -143,13 +146,13 @@ export const TableFunctions = ({
 
         if (isSelectedAll()) {
             // If already selected, unselect all filtered rows
-            filteredRows.forEach((row) => {
-                newSelection[row.id] = false;
+            filteredRows.forEach((row, index) => {
+                newSelection[index] = false;
             });
         } else {
             // If not already selected, select all filtered rows
-            filteredRows.forEach((row) => {
-                newSelection[row.id] = true;
+            filteredRows.forEach((row, index) => {
+                newSelection[index] = true;
             });
         }
 
@@ -182,6 +185,22 @@ export const TableFunctions = ({
     };
 };
 
+const role = "ADMIN"
+
+/*
+header: header bir string veya bir number alır tablo başlığı olarak kullanılır.
+dt_name: bu value başlığın datadan hangi key ile veri çekeceğini belirtir bir string alır.
+sortable: bu başlık altındaki veriler sıralamaya tabi tutulacak mı? sıralama olacak mı?
+filter: "include" yada "equal" alır içerisinde olması yeterli mi yoksa eşit mi olacak bunu kontrol eder.
+enableForm: Data ekleme modalında görünecek mi (bir input olarak)
+type: Data ekleme modalında olan inputun type'ını belirtir "text", "email", "number" vb...
+translate: Data ekleme modalında ki ekstra dil ekleme özelliklerini kullanacak mı?
+hide: true ise tabloda görünmez.
+columnFilter: select ile bir filterlama işlemi yapılacak mı?
+cell: () => {}, bir component alır içerisine ve bu headerın altındaki verilerde bu component'ı kullanır tüm datayı props olarak alır.
+ */
+
+
 // Test için kullanılan sütunlar
 export const TestColumns = [
     {
@@ -195,6 +214,7 @@ export const TestColumns = [
         filter: "include",
         enableForm: true,
         type: "text",
+        translate: true
     },
     {
         header: "Last Name",
@@ -202,6 +222,7 @@ export const TestColumns = [
         filter: "include",
         enableForm: true,
         type: "text",
+        translate: true
     },
     {
         header: "Email",
@@ -209,13 +230,16 @@ export const TestColumns = [
         filter: "include",
         enableForm: true,
         type: "text",
+        translate: true
     },
     {
         header: "Gender",
         dt_name: "gender",
-        filter: "include",
+        filter: "equal",
         enableForm: true,
         type: "text",
         columnFilter: true,
+        translate: true,
+        hide: role === "ADMIN" ? false : true
     },
 ];

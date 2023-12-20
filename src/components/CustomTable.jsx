@@ -53,6 +53,7 @@ const CustomTable = ({
                          pagination = true,
                          paginationType = "page",
                          langs,
+                         defaultLang
                      }) => {
     {/* Stateler */}
     const [data, setData] = useState(initial_dt);
@@ -61,24 +62,24 @@ const CustomTable = ({
         pageIndex: 0,
     });
     const [filters, setFilters] = useState({
-        global: "",
-        columns: [],
+        global: "", /* Filtreleme inputunun değerini tutar */
+        columns: [], /* Column filterlarının değerlerini tutar  */
     });
-    const [visible, setVisible] = useState({});
-    const [openAddModal, setOpenAddModal] = useState(false);
-    const [addModalState, setAddModalState] = useState({});
-    const [sorting, setSorting] = useState({});
-    const [lang, setLang] = useState(langs[0]);
-    const [addModalLang, setAddModalLang] = useState(langs[0]);
-    const [selection, setSelection] = useState({})
+    const [visible,setVisible] = useState({}); {/* tablodaki başlıkların görünürlük değerlerini tutar, [key]: boolen */}
+    const [openAddModal, setOpenAddModal] = useState(false); {/* Data ekleme modalının kapanıp açıldığının değerini tutar */}
+    const [addModalState, setAddModalState] = useState({}); {/* Data ekleme modalının içerisine girilen değerlerin tutulduğu state */}
+    const [sorting, setSorting] = useState({}); {/* [key]: "asc" | "desc, bu type'da bir veri alır keyi tabloda arar ve bulunan başlığı valuesundaki değere göre sıralar (asc veya desc) olarak. */}
+    const [lang, setLang] = useState(langs.filter((x) => x.code.toLowerCase() === defaultLang.toLowerCase())[0] ?? null); {/* DefaultLang'deki stringi langs datası içerisindeki .code valuesunda arar ve bulunan dili state içerisine default oalrak verir, bu state dil değerini tutar */}
+    const [addModalLang, setAddModalLang] = useState(null); {/* Lang ile aynı yapıda olup data ekleme modalında eklenecek dataların hangi dilde yazıldığını tutar */}
+    const [selection, setSelection] = useState({}); {/* [key]: boolena, bu type'da bir veri tutar datanın indexini key olarak kullanır o index'e ait olan satırın seçili olup olmadığını bu state tutar. */}
 
     {/* if else yapıları */}
     const totalPages = useMemo(() => Math.ceil(data.length / perPage), [data, perPage]);
     const handlePrevious = () => setPage((prev) => ({...prev, pageIndex: prev.pageIndex - 1}));
-    const handleNext = () => setPage((prev) => ({pageSize: perPage, pageIndex: prev.pageIndex + 1}));
+    const handleNext = () => setPage((prev) => ({...prev, pageIndex: prev.pageIndex + 1}));
     const canNextPage = () => page.pageIndex === totalPages - 1;
     const canPreviousPage = () => page.pageIndex === 0;
-    const isSelectedAll = () => table.getRows().length > 0 && table.getRows().every(row => selection[row.id])
+    const isSelectedAll = () => table.getRows().length > 0 && table.getRows().every((row, index) => selection[index])
 
     {/* fonksiyonların çağrılması */}
     const table = TableFunctions({
@@ -131,11 +132,14 @@ const CustomTable = ({
 
                 <DropdownMenu>
                     <DropdownMenuTrigger className="!ring-0" asChild>
-                        <Button variant="outline">
-                            <img alt={lang.name} className="w-8" src={lang?.image}/>
-                        </Button>
+                        {lang
+                            ? <Button variant="outline">
+                                <img alt={lang?.name} className="w-8" src={lang?.image}/>
+                            </Button>
+                            : <Button variant="outline">Deafult</Button>}
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
+                        <DropdownMenuItem onClick={() => setLang(null)}>Default</DropdownMenuItem>
                         {langs.map((lang, idx) => (
                             <DropdownMenuItem key={idx} onClick={() => setLang(lang)}>{lang.code}</DropdownMenuItem>
                         ))}
@@ -162,9 +166,10 @@ const CustomTable = ({
                             </AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={() => {
-                                    const filteredData = data.filter((item) => !selection[item.id] ?? true);
+                                    const filteredData = data.filter((item, index) => !selection[index] ?? true);
 
                                     setData(filteredData);
+                                    setSelection({})
                                     setFilters({global: "", columns: []});
 
                                     toast.warning("Deleted Selected Data");
@@ -176,6 +181,7 @@ const CustomTable = ({
                     </AlertDialogContent>
                 </AlertDialog>
 
+                {/* BU BLOCK TÜM FİLTERLANMIŞ DATAYI SİLMEK İÇİN VAR */}
                 <AlertDialog>
                     <AlertDialogTrigger
                         disabled={data.length === 0}
@@ -208,6 +214,7 @@ const CustomTable = ({
                     </AlertDialogContent>
                 </AlertDialog>
 
+                {/* BU BLOCK DATA EKLEME MODALINI İÇERİR */}
                 <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
                     <DialogTrigger asChild>
                         <Button variant="outline">Add Data</Button>
@@ -220,7 +227,7 @@ const CustomTable = ({
                                 e.preventDefault();
                                 const st = addModalState;
                                 setData((prevState) => [...prevState, {id: prevState.length + 1, ...st}]);
-                                setAddModalLang(langs[0])
+                                setAddModalLang(null)
                                 toast.success("Successfully added new data");
                                 setAddModalState({});
                                 setOpenAddModal(false);
@@ -233,29 +240,36 @@ const CustomTable = ({
                                 </DialogHeader>
 
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger className="!ring-0" asChild>
-                                        <Button variant="outline" className="ml-auto">
-                                            <img alt={addModalLang.name} className="w-8" src={addModalLang?.image}/>
-                                        </Button>
+                                    <DropdownMenuTrigger className="!ring-0 ml-auto" asChild>
+                                        {addModalLang
+                                            ? <Button variant="outline">
+                                                <img alt={addModalLang?.name} className="w-8"
+                                                     src={addModalLang?.image}/>
+                                            </Button>
+                                            : <Button variant="outline">Deafult</Button>}
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuContent align="start">
+                                        <DropdownMenuItem
+                                            onClick={() => setAddModalLang(null)}>Default</DropdownMenuItem>
                                         {langs.map((lang, idx) => (
-                                            <DropdownMenuItem key={idx} onClick={() => setAddModalLang(lang)}>{lang.code}</DropdownMenuItem>
+                                            <DropdownMenuItem key={idx}
+                                                              onClick={() => setAddModalLang(lang)}>{lang.code}</DropdownMenuItem>
                                         ))}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
 
+                            {/* DATA EKLMEK İÇİN İNPUTLAR */}
                             <div className="flex flex-col gap-5 py-6">
                                 {columns
-                                    .filter((x) => x?.enableForm && (addModalLang?.code === langs[0].code || x?.translate))
-                                    .map((column) => {
-                                        const columnKey = addModalLang?.code === langs[0].code ? column?.dt_name : column?.dt_name + addModalLang?.code;
+                                    .filter((x) => x?.enableForm && (addModalLang === null || x?.translate))
+                                    .map((column, col_index) => {
+                                        const columnKey = addModalLang === null ? column?.dt_name : column?.dt_name + addModalLang?.code;
 
                                         return (
                                             <div
                                                 className="grid gridcol-4 items-center gap-4"
-                                                key={column.id + columnKey}
+                                                key={col_index + columnKey}
                                             >
                                                 <Label className="text-left w-full capitalize">
                                                     {column?.dt_name?.replaceAll("_", " ")}
@@ -271,7 +285,7 @@ const CustomTable = ({
                                                     value={addModalState[columnKey]}
                                                     required
                                                     id={columnKey}
-                                                    placeholder={(addModalLang?.code && addModalLang?.code + " ") + column?.dt_name?.replaceAll("_", " ")}
+                                                    placeholder={(addModalLang ? addModalLang?.code + " " : "") + column?.dt_name?.replaceAll("_", " ")}
                                                 />
                                             </div>
                                         );
@@ -279,7 +293,7 @@ const CustomTable = ({
                             </div>
 
                             <DialogFooter>
-                                <DialogClose className="mr-4">
+                                <DialogClose onClick={() => setAddModalState({})} className="mr-4">
                                     <Button variant="secondary" type="reset">
                                         Close
                                     </Button>
@@ -292,9 +306,12 @@ const CustomTable = ({
                     </DialogContent>
                 </Dialog>
 
-                {filters.columns.length > 0 ? (
+                {filters.columns.length > 0 || sorting?.id ? (
                     <Button
-                        onClick={() => setFilters((prevState) => ({...prevState, columns: []}))}
+                        onClick={() => {
+                            setFilters((prevState) => ({...prevState, columns: []}))
+                            setSorting({})
+                        }}
                         variant="destructive"
                     >
                         Clear Filters
@@ -302,8 +319,10 @@ const CustomTable = ({
                 ) : null}
             </div>
 
+            {/* TABLE MAİN BLOCK */}
             <div className="rounded border ">
                 <Table>
+                    {/* TABLE HEADER */}
                     <TableHeader>
                         <TableHead>
                             <Checkbox
@@ -316,17 +335,17 @@ const CustomTable = ({
                                 {column.columnFilter ? (
                                     <Select
                                         defaultValue="all"
-                                        onValueChange={(newVal) => table.changeFilter(column.dt_name, newVal)}
+                                        onValueChange={(newVal) => table.changeFilter(column.dt_name, newVal.toLowerCase())}
                                     >
-                                        <SelectTrigger className="px-2 w-[125px] !ring-transparent">
+                                        <SelectTrigger className="px-2 w-[125px] !ring-transparent capitalize">
                                             <SelectValue placeholder="All"/>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem  defaultChecked={true} value="all">
+                                            <SelectItem defaultChecked={true} value="all">
                                                 All
                                             </SelectItem>
-                                            {table.uniqueValues(column.dt_name).map((val, idx) => (
-                                                <SelectItem key={idx} value={val}>{val}</SelectItem>
+                                                {table.uniqueValues(column.dt_name).map((val, idx) => (
+                                                <SelectItem key={idx} value={val} className="capitalize">{val}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -353,19 +372,31 @@ const CustomTable = ({
                     </TableHeader>
 
                     <TableBody>
-                        {table.getRows().map((dt, dt_idx) => (
-                            <TableRow key={dt_idx}>
-                                <TableCell>
-                                    <Checkbox
-                                        checked={selection[dt.id] ?? false}
-                                        onCheckedChange={() => setSelection(prev => ({...prev, [dt.id]: !prev[dt.id] ?? true}))}
-                                    />
-                                </TableCell>
-                                {table.getHeaders().map((col, col_idx) => (
-                                    <TableCell key={col_idx}>{dt[col.dt_name + lang.code] ?? dt[col.dt_name]}</TableCell>
-                                ))}
-                            </TableRow>
-                        ))}
+                        {table.getRows().map((dt, dt_idx) => {
+                            return (
+                                <TableRow key={dt_idx}>
+                                    <TableCell>
+                                        <Checkbox
+                                            checked={selection[dt_idx] ?? false}
+                                            onCheckedChange={() => setSelection(prev => ({
+                                                ...prev,
+                                                [dt_idx]: !prev[dt_idx] ?? true
+                                            }))}
+                                        />
+                                    </TableCell>
+                                    {table.getHeaders().map((col, col_idx) => {
+                                        const CustomComponent = col?.cell ?? null
+                                        return (
+                                            <TableCell key={col_idx}>{
+                                                CustomComponent
+                                                    ? <CustomComponent {...col} {...dt}/>
+                                                    : dt[col.dt_name + lang?.code ?? ""] ?? dt[col.dt_name]
+                                            }</TableCell>
+                                        )
+                                    })}
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </div>
