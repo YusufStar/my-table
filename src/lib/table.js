@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import {useCallback} from "react";
 
 // Tablo işlevlerini içeren bir özel kancayı oluşturdum
 export const TableFunctions = ({
@@ -9,7 +9,12 @@ export const TableFunctions = ({
                                    pagination,
                                    page,
                                    sorting,
+                                   setFilters,
+                                   setSorting,
+                                   setSelection,
+                                   isSelectedAll
                                }) => {
+
     // Sütun başlıklarını almak için özel bir kancayı tanımladım
     const getHeaders = useCallback(() => {
         return columns
@@ -109,12 +114,71 @@ export const TableFunctions = ({
         return uniqueValuesByColumn[columnName] || uniqueValuesByColumn;
     };
 
+
+    const changeFilter = (name, val) => {
+        setFilters((prevFilters) => {
+            const updatedColumns = prevFilters.columns.filter(
+                (col) => Object.keys(col)[0] !== name
+            );
+
+            const withoutAllFilter = updatedColumns.filter(
+                (col) => Object.values(col)[0] !== null
+            );
+
+            const newColumns =
+                val !== "all"
+                    ? [...withoutAllFilter, {[name]: val}]
+                    : withoutAllFilter
+
+            return {
+                ...prevFilters,
+                columns: newColumns,
+            };
+        });
+    };
+
+    const selectAll = (val) => {
+        const filteredRows = getRows();
+        const newSelection = {};
+
+        if (isSelectedAll()) {
+            // If already selected, unselect all filtered rows
+            filteredRows.forEach((row) => {
+                newSelection[row.id] = false;
+            });
+        } else {
+            // If not already selected, select all filtered rows
+            filteredRows.forEach((row) => {
+                newSelection[row.id] = true;
+            });
+        }
+
+        setSelection(newSelection);
+    }
+
+    const changeSorting = (column) => {
+        if (column?.header !== sorting?.id) {
+            setSorting({
+                id: column.header,
+                value: "asc",
+            });
+        } else if (column?.header === sorting?.id) {
+            setSorting((prevState) => ({
+                ...prevState,
+                value: prevState?.value === "asc" ? "desc" : "asc",
+            }));
+        }
+    }
+
     // Dışa açılan fonksiyonları döndür
     return {
         uniqueValues,
         getHeaders,
         getRows,
         applyFilters,
+        changeFilter,
+        changeSorting,
+        selectAll
     };
 };
 

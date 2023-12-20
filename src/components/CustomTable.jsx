@@ -54,6 +54,7 @@ const CustomTable = ({
                          paginationType = "page",
                          langs,
                      }) => {
+    {/* Stateler */}
     const [data, setData] = useState(initial_dt);
     const [page, setPage] = useState({
         pageSize: perPage,
@@ -71,6 +72,15 @@ const CustomTable = ({
     const [addModalLang, setAddModalLang] = useState(langs[0]);
     const [selection, setSelection] = useState({})
 
+    {/* if else yapıları */}
+    const totalPages = useMemo(() => Math.ceil(data.length / perPage), [data, perPage]);
+    const handlePrevious = () => setPage((prev) => ({...prev, pageIndex: prev.pageIndex - 1}));
+    const handleNext = () => setPage((prev) => ({pageSize: perPage, pageIndex: prev.pageIndex + 1}));
+    const canNextPage = () => page.pageIndex === totalPages - 1;
+    const canPreviousPage = () => page.pageIndex === 0;
+    const isSelectedAll = () => table.getRows().length > 0 && table.getRows().every(row => selection[row.id])
+
+    {/* fonksiyonların çağrılması */}
     const table = TableFunctions({
         columns,
         visible,
@@ -79,14 +89,11 @@ const CustomTable = ({
         pagination,
         page,
         sorting,
+        isSelectedAll,
+        setFilters,
+        setSorting,
+        setSelection
     });
-
-    const totalPages = useMemo(() => Math.ceil(data.length / perPage), [data, perPage]);
-
-    const handlePrevious = () => setPage((prev) => ({...prev, pageIndex: prev.pageIndex - 1}));
-    const handleNext = () => setPage((prev) => ({pageSize: perPage, pageIndex: prev.pageIndex + 1}));
-    const canNextPage = () => page.pageIndex === totalPages - 1;
-    const canPreviousPage = () => page.pageIndex === 0;
 
     return (
         <div className=" h-full flex flex-col gap-4">
@@ -300,26 +307,8 @@ const CustomTable = ({
                     <TableHeader>
                         <TableHead>
                             <Checkbox
-                                checked={table.getRows().length > 0 && table.getRows().every(row => selection[row.id])}
-                                onCheckedChange={(val) => {
-                                    const filteredRows = table.getRows();
-                                    const isSelectedAll = filteredRows.length > 0 && filteredRows.every(row => selection[row.id]);
-                                    const newSelection = {};
-
-                                    if (isSelectedAll) {
-                                        // If already selected, unselect all filtered rows
-                                        filteredRows.forEach((row) => {
-                                            newSelection[row.id] = false;
-                                        });
-                                    } else {
-                                        // If not already selected, select all filtered rows
-                                        filteredRows.forEach((row) => {
-                                            newSelection[row.id] = true;
-                                        });
-                                    }
-
-                                    setSelection(newSelection);
-                                }}
+                                checked={isSelectedAll()}
+                                onCheckedChange={(val) => table.selectAll(val)}
                             />
                         </TableHead>
                         {table.getHeaders().map((column, idx) => (
@@ -327,27 +316,7 @@ const CustomTable = ({
                                 {column.columnFilter ? (
                                     <Select
                                         defaultValue="all"
-                                        onValueChange={(newVal) => {
-                                            setFilters((prevFilters) => {
-                                                const updatedColumns = prevFilters.columns.filter(
-                                                    (col) => Object.keys(col)[0] !== column.dt_name
-                                                );
-
-                                                const withoutAllFilter = updatedColumns.filter(
-                                                    (col) => Object.values(col)[0] !== null
-                                                );
-
-                                                const newColumns =
-                                                    newVal !== "all"
-                                                        ? [...withoutAllFilter, {[column.dt_name]: newVal}]
-                                                        : withoutAllFilter;
-
-                                                return {
-                                                    ...prevFilters,
-                                                    columns: newColumns,
-                                                };
-                                            });
-                                        }}
+                                        onValueChange={(newVal) => table.changeFilter(column.dt_name, newVal)}
                                     >
                                         <SelectTrigger className="px-2 w-[125px] !ring-transparent">
                                             <SelectValue placeholder="All"/>
@@ -363,19 +332,7 @@ const CustomTable = ({
                                     </Select>
                                 ) : column.sortable ? (
                                     <div
-                                        onClick={() => {
-                                            if (column?.header !== sorting?.id) {
-                                                setSorting({
-                                                    id: column.header,
-                                                    value: "asc",
-                                                });
-                                            } else if (column?.header === sorting?.id) {
-                                                setSorting((prevState) => ({
-                                                    ...prevState,
-                                                    value: prevState?.value === "asc" ? "desc" : "asc",
-                                                }));
-                                            }
-                                        }}
+                                        onClick={() => table.changeSorting(column)}
                                         className="w-fit border-b border-muted-foreground cursor-pointer flex items-center gap-2"
                                     >
                                         {column.header}
