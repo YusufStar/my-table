@@ -50,8 +50,8 @@ const CustomTable = ({
                          columns,
                          initial_dt,
                          perPage = 10,
-                         pagination = true,
                          paginationType = "page",
+                         pagination = true,
                          langs,
                          defaultLang
                      }) => {
@@ -75,8 +75,8 @@ const CustomTable = ({
 
     {/* if else yapıları */}
     const totalPages = useMemo(() => Math.ceil(data.length / perPage), [data, perPage]);
-    const handlePrevious = () => setPage((prev) => ({...prev, pageIndex: prev.pageIndex - 1}));
-    const handleNext = () => setPage((prev) => ({...prev, pageIndex: prev.pageIndex + 1}));
+    const handlePrevious = () => setPage((prev) => ({pageSize: perPage, pageIndex: prev.pageIndex - 1}));
+    const handleNext = () => setPage((prev) => ({pageSize: perPage, pageIndex: prev.pageIndex + 1}));
     const canNextPage = () => page.pageIndex === totalPages - 1;
     const canPreviousPage = () => page.pageIndex === 0;
     const isSelectedAll = () => table.getRows().length > 0 && table.getRows().every((row, index) => selection[index])
@@ -101,7 +101,7 @@ const CustomTable = ({
             <div className="flex flex-wrap items-center w-full gap-4">
                 <Input
                     value={filters.global}
-                    onChange={(e) => setFilters((prev) => ({...prev, global: e.target.value}))}
+                    onChange={(e) => setFilters((prev) => ({columns: prev.columns, global: e.target.value}))}
                     placeholder="Search in data table."
                     className="w-screen max-w-sm !outline-none !ring-muted-foreground"
                 />
@@ -309,7 +309,7 @@ const CustomTable = ({
                 {filters.columns.length > 0 || sorting?.id ? (
                     <Button
                         onClick={() => {
-                            setFilters((prevState) => ({...prevState, columns: []}))
+                            setFilters((prevState) => ({global: prevState.global, columns: []}))
                             setSorting({})
                         }}
                         variant="destructive"

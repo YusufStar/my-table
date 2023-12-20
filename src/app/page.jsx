@@ -22,8 +22,7 @@ pagination: true ise sayfalı false ise tek sayfada gösterir.
 paginationType: "load" veya "page" alır sayfalar geçişlimi yoksa load more butonu ile aşağı doğru kayarak mı sayfalanacak?
 defaultLang: langs datasındaki code valusunu alır (!!ana dil için!!)
  */
-
-export default function Home() {
+function Home(){
     return (
         <main className="min-h-screen p-8 w-screen flex items-center justify-center">
             <div className="container">
@@ -40,3 +39,5 @@ export default function Home() {
         </main>
     )
 }
+
+export default Home
