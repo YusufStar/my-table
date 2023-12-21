@@ -17,21 +17,26 @@ export const TableFunctions = ({
                                    isSelectedAll
                                }) => {
 
-    // Sütun başlıklarını almak için özel bir kancayı tanımladım
+    // Headerları filterlar ve filterlanmış datayı return eder
     const getHeaders = useCallback(() => {
         return columns
+            // eğer ki header'ın hide valuesu false ise geçmesine izin ver eğerki true ise geçişini engelle bu şekilde gizli başlıklar oluşturuluyor
             .filter((col) => !col.hide)
+            // visible statinde bu başlık var ise veya hiç tanımlı değilse geçmesine izin ver eğerki hi tanımlı ve false ise geçişine izin verme
             .filter((col) => visible[col.dt_name.toLowerCase()] ?? true);
     }, [columns, visible]);
 
-    // Filtreleri uygulamak için özel bir kancayı tanımladım
+    // Filterları istediğimiz yerde istediğimiz data uygulamak için bir fonksiyon içerisine bir object alır ve tablo component'ının içerisinde ki filter state'i içerisinde ki global ve column değerlerini kullanarak filterlama işlemlerini uygular
     const applyFilters = useCallback(
         (item) => {
+
+            // datada ki tüm valueları gezer ve 1 tanesinde bile bir eşleşme var ise true olarak döner.
             const globalSearch = () =>
                 Object.values(item).some((value) =>
                     value.toString().toLowerCase().includes(filters.global.toLowerCase())
                 );
 
+            // dışarıdan başlık ismi ve o başlıkta aranacak kelimeyi alır eğerki başlığın filterType'ı include ise içerisinde o string var mı bunu arar eğer ki equal ise eşitlik sağlıyor mu buna bakar.
             const columnSearch = (columnName, filterValue) => {
                 const column = columns.find((col) => col.dt_name === columnName);
                 if (column) {
@@ -46,6 +51,7 @@ export const TableFunctions = ({
                 return true;
             };
 
+            // eğer ki global search'den ve column search'den geçebilirse bu fonksiyondan true döner, return : boolean
             return (
                 globalSearch() &&
                 filters.columns.every((colFilter) =>
@@ -59,7 +65,7 @@ export const TableFunctions = ({
         [filters, columns]
     );
 
-    // Satırları almak için özel bir kancayı tanımladım
+    // Ham datayı filterlardan geçirerek kullanılacak datayı almak için bir fonksiyon
     const getRows = useCallback(() => {
         let filteredData = data;
 
@@ -91,8 +97,9 @@ export const TableFunctions = ({
         return filteredData;
     }, [data, pagination, applyFilters, page, sorting, columns]);
 
-    // Belirli bir sütun için benzersiz değerleri almak için özel bir fonksiyon tanımladım
+    // Belirli bir sütun için benzersiz değerleri almak için bir fonksiyon
     const getUniqueValues = (columnName, data) => {
+        // new Set() ile verinin içerisinde aynı stringlerin olmasını engelliyoruz
         const uniqueValues = new Set();
 
         data
@@ -102,23 +109,24 @@ export const TableFunctions = ({
             }
         });
 
+        // uniqueValues verisini bir arraya çevir ve return et
         return Array.from(uniqueValues);
     };
 
-    // Tüm sütunlar için benzersiz değerleri almak için özel bir fonksiyon tanımladım
+    // Belirli bir sütundaki benzersiz değerleri almak için bu fonksiyonu kullanıyoruz. getUniqueValues fonksiyonunu kullanıyor
     const uniqueValues = (columnName) => {
         const uniqueValuesByColumn = {};
 
-        getHeaders().forEach((col) => {
-            const columnName = col.dt_name;
-            uniqueValuesByColumn[columnName] = getUniqueValues(columnName, data);
-        });
+        uniqueValuesByColumn[columnName] = getUniqueValues(columnName, data);
 
-        return uniqueValuesByColumn[columnName] || uniqueValuesByColumn;
+        return uniqueValuesByColumn[columnName];
     };
 
-
+    // name: column name, val: column filter value, bu fonksiyon column search kısmındaki select in her value değişikliğinde çalışacak olan fonksiyon.
     const changeFilter = (name, val) => {
+        // eğer ki seçilen value all ise filter datamın içerisinden o kısmı tamamen çıkar
+        // eğer ki seçilen value all değil ise datanın içereisinde ki [name] in valuesunu value ya eşitle yani ->  [name]: value
+
         setFilters((prevFilters) => {
             const updatedColumns = prevFilters.columns.filter(
                 (col) => Object.keys(col)[0] !== name
@@ -140,6 +148,7 @@ export const TableFunctions = ({
         });
     };
 
+    // tüm verinin içerisinde gez ve hepsinin selectiondaki değerini hepsi zaten seçili ise false değil ise true yap
     const selectAll = (val) => {
         const filteredRows = getRows();
         const newSelection = {};
@@ -159,6 +168,7 @@ export const TableFunctions = ({
         setSelection(newSelection);
     }
 
+    // sıralanabilir bir columna tıklanıldığında asc ise desc desc ise asc yapmak için var bu fonksiyon
     const changeSorting = (column) => {
         if (column?.header !== sorting?.id) {
             setSorting({
