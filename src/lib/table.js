@@ -104,10 +104,10 @@ export const TableFunctions = ({
 
         data
             .forEach((item) => {
-            if (item[columnName] !== undefined) {
-                uniqueValues.add(item[columnName].toString().toLowerCase());
-            }
-        });
+                if (item[columnName] !== undefined) {
+                    uniqueValues.add(item[columnName].toString().toLowerCase());
+                }
+            });
 
         // uniqueValues verisini bir arraya çevir ve return et
         return Array.from(uniqueValues);
@@ -217,39 +217,154 @@ export const TestColumns = [
         header: "ID",
         dt_name: "id",
         sortable: true,
+        enableForm: false
     },
     {
         header: "First Name",
         dt_name: "first_name",
-        filter: "include",
+        hide: false,
         enableForm: true,
+        translate: false,
         type: "text",
-        translate: true
     },
     {
-        header: "Last Name",
-        dt_name: "last_name",
-        filter: "include",
+        header: "Password",
+        dt_name: "password",
+        hide: true,
         enableForm: true,
-        type: "text",
-        translate: true
+        translate: false,
+        type: "password",
     },
     {
-        header: "Email",
-        dt_name: "email",
-        filter: "include",
-        enableForm: true,
-        type: "text",
-        translate: true
+        header: "ID",
+        dt_name: "id",
+        sortable: true,
+        enableForm: false
     },
     {
-        header: "Gender",
-        dt_name: "gender",
-        filter: "equal",
+        header: "First Name",
+        dt_name: "first_name",
+        hide: false,
         enableForm: true,
+        translate: false,
         type: "text",
-        columnFilter: true,
-        translate: true,
-        hide: role === "ADMIN" ? false : true
     },
+    {
+        header: "Password",
+        dt_name: "password",
+        hide: true,
+        enableForm: true,
+        translate: false,
+        type: "password",
+    },
+    {
+        header: "ID",
+        dt_name: "id",
+        sortable: true,
+        enableForm: false
+    },
+    {
+        header: "First Name",
+        dt_name: "first_name",
+        hide: false,
+        enableForm: true,
+        translate: false,
+        type: "text",
+    },
+    {
+        header: "Password",
+        dt_name: "password",
+        hide: true,
+        enableForm: true,
+        translate: false,
+        type: "password",
+    },
+    {
+        header: "ID",
+        dt_name: "id",
+        sortable: true,
+        enableForm: false
+    },
+    {
+        header: "First Name",
+        dt_name: "first_name",
+        hide: false,
+        enableForm: true,
+        translate: false,
+        type: "text",
+    },
+    {
+        header: "Password",
+        dt_name: "password",
+        hide: true,
+        enableForm: true,
+        translate: false,
+        type: "password",
+    },
+    {
+        header: "ID",
+        dt_name: "id",
+        sortable: true,
+        enableForm: false
+    },
+    {
+        header: "First Name",
+        dt_name: "first_name",
+        hide: false,
+        enableForm: true,
+        translate: false,
+        type: "text",
+    },
+    {
+        header: "Password",
+        dt_name: "password",
+        hide: true,
+        enableForm: true,
+        translate: false,
+        type: "password",
+    },
+    {
+        header: "ID",
+        dt_name: "id",
+        sortable: true,
+        enableForm: false
+    },
+    {
+        header: "First Name",
+        dt_name: "first_name",
+        hide: false,
+        enableForm: true,
+        translate: false,
+        type: "text",
+    },
+    {
+        header: "Password",
+        dt_name: "password",
+        hide: true,
+        enableForm: true,
+        translate: false,
+        type: "password",
+    },
+    {
+        header: "ID",
+        dt_name: "id",
+        sortable: true,
+        enableForm: false
+    },
+    {
+        header: "First Name",
+        dt_name: "first_name",
+        hide: false,
+        enableForm: true,
+        translate: false,
+        type: "text",
+    },
+    {
+        header: "Password",
+        dt_name: "password",
+        hide: true,
+        enableForm: true,
+        translate: false,
+        type: "password",
+    }
 ];

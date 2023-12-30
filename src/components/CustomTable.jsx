@@ -229,7 +229,7 @@ const CustomTable = ({
             </AlertDialog>
             {/* DELETE ALL END */}
 
-            {/* ADD DATA MODAL START */}
+
             {/* BU BLOCK DATA EKLEME MODALINI İÇERİR */}
             <Dialog open={openAddModal} onOpenChange={setOpenAddModal}>
                 {/* Modal'ı tetikleyen buton */}
@@ -238,9 +238,9 @@ const CustomTable = ({
                 </DialogTrigger>
 
                 {/* Modal içeriği */}
-                <DialogContent className={"lg:max-w-2xl overflow-y-auto h-fit"}>
+                <DialogContent className="lg:max-w-screen-lg overflow-y-scroll max-h-screen">
                     <form
-                        className="outline-none rounded-md"
+                        className="outline-none rounded-md py-4"
                         onSubmit={(e) => {
                             // form tetiklenir (submit) ise dataya modal'daki inputların tutulduğu state'i ve id: datanın uzunluğu + 1 ekle
                             e.preventDefault();
