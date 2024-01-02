@@ -1,4 +1,11 @@
-export const data = []
+export const data = [
+    {
+        id: "1",
+        first_name: "Yusuf",
+        last_name: "Star",
+        password: "Ab121212..,"
+    }
+]
 
 export const langs = [
     {

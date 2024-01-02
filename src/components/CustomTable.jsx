@@ -401,7 +401,7 @@ const CustomTable = ({
                                 {table.getHeaders().map((col, col_idx) => {
                                     const CustomComponent = col?.cell ?? null
                                     return (<TableCell key={col_idx}>{CustomComponent ?
-                                        <CustomComponent {...col} {...dt}/> : dt[col.dt_name + lang?.code ?? ""] ?? dt[col.dt_name]}</TableCell>)
+                                        <CustomComponent {...col} {...dt} setData={setData}/> : dt[col.dt_name + lang?.code ?? ""] ?? dt[col.dt_name]}</TableCell>)
                                 })}
                             </TableRow>)
                     })}

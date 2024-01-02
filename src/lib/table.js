@@ -210,7 +210,6 @@ columnFilter: select ile bir filterlama işlemi yapılacak mı?
 cell: () => {}, bir component alır içerisine ve bu headerın altındaki verilerde bu component'ı kullanır tüm datayı props olarak alır.
  */
 
-
 // Test için kullanılan sütunlar
 export const TestColumns = [
     {
@@ -228,132 +227,8 @@ export const TestColumns = [
         type: "text",
     },
     {
-        header: "Password",
-        dt_name: "password",
-        hide: true,
-        enableForm: true,
-        translate: false,
-        type: "password",
-    },
-    {
-        header: "ID",
-        dt_name: "id",
-        sortable: true,
-        enableForm: false
-    },
-    {
-        header: "First Name",
-        dt_name: "first_name",
-        hide: false,
-        enableForm: true,
-        translate: false,
-        type: "text",
-    },
-    {
-        header: "Password",
-        dt_name: "password",
-        hide: true,
-        enableForm: true,
-        translate: false,
-        type: "password",
-    },
-    {
-        header: "ID",
-        dt_name: "id",
-        sortable: true,
-        enableForm: false
-    },
-    {
-        header: "First Name",
-        dt_name: "first_name",
-        hide: false,
-        enableForm: true,
-        translate: false,
-        type: "text",
-    },
-    {
-        header: "Password",
-        dt_name: "password",
-        hide: true,
-        enableForm: true,
-        translate: false,
-        type: "password",
-    },
-    {
-        header: "ID",
-        dt_name: "id",
-        sortable: true,
-        enableForm: false
-    },
-    {
-        header: "First Name",
-        dt_name: "first_name",
-        hide: false,
-        enableForm: true,
-        translate: false,
-        type: "text",
-    },
-    {
-        header: "Password",
-        dt_name: "password",
-        hide: true,
-        enableForm: true,
-        translate: false,
-        type: "password",
-    },
-    {
-        header: "ID",
-        dt_name: "id",
-        sortable: true,
-        enableForm: false
-    },
-    {
-        header: "First Name",
-        dt_name: "first_name",
-        hide: false,
-        enableForm: true,
-        translate: false,
-        type: "text",
-    },
-    {
-        header: "Password",
-        dt_name: "password",
-        hide: true,
-        enableForm: true,
-        translate: false,
-        type: "password",
-    },
-    {
-        header: "ID",
-        dt_name: "id",
-        sortable: true,
-        enableForm: false
-    },
-    {
-        header: "First Name",
-        dt_name: "first_name",
-        hide: false,
-        enableForm: true,
-        translate: false,
-        type: "text",
-    },
-    {
-        header: "Password",
-        dt_name: "password",
-        hide: true,
-        enableForm: true,
-        translate: false,
-        type: "password",
-    },
-    {
-        header: "ID",
-        dt_name: "id",
-        sortable: true,
-        enableForm: false
-    },
-    {
-        header: "First Name",
-        dt_name: "first_name",
+        header: "Last Name",
+        dt_name: "last_name",
         hide: false,
         enableForm: true,
         translate: false,
